@@ -3,8 +3,6 @@
 #' Determines the coeffiicients for terms in the fictional observations,
 #' to ensure a given weight relative to the normal observations.
 #'
-#' Assumes only one contrast.
-#'
 #' @param ratios desired ratio of observed and fictional data
 #' @param formula lm-style formula
 #' @param data optional data frame
