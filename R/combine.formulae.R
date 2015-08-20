@@ -1,17 +1,11 @@
 #' Combine two formulas in hierlm-format
 #'
 #' Return the left and right side of a new combined formula.
-#' Left formula must be a standard formula.  Right formula may take the following forms:
-#' y ~ ... : an lm-style formula; the left-hand-side variables much match
-#' f - b : A requirement that two variables be close together (typically one is a factor)
-#' f - . : A requirement that a variable (or set of factors) be close to a new hyper-variable
-#' a : f - [b or .] : A requirement that the results of an interaction be near a hyper-variable
-#' a : f > b : f : A requirement that one interaction is close to another set of interactions, with the lhs as the strict supersets
-#' TODO:
-#' a + B : A requirement that the factors in 'a' are similar to eachother by smoothness 'B'
+#' Left formula must be a standard formula.  Right formula may take the forms described in hierlm().
 #'
 #' @param formula1 an lm-style formula
 #' @param formula2 an additional formula or hierlm term
+#' @param sep a paste separator for creating hyper terms
 #' @return Augmented formula
 #' @examples
 #' combine.formulae(combine.formulae(combine.formulae(y ~ a + b, "b - c"), y ~ c + d), "c : d - .")
@@ -26,14 +20,14 @@ combine.formulae <- function(formula1, formula2, sep="") {
     if (class(formula2) == "formula") {
         chunks2 <- as.character(formula2)
         if (chunks2[2] != chunks1[2])
-            error("Left-hand-side variables do not match.")
+            stop("Left-hand-side variables do not match.")
 
         terms1 <- get.formula.terms(formula1)
         terms2 <- get.formula.terms(formula2)
     } else {
         terms2 <- get.hyper.terms(formula2, sep=sep)
         if (length(terms2) != 3)
-            error(paste("Cannot understand expression:", formula2))
+            stop(paste("Cannot understand expression:", formula2))
 
         terms2 <- terms2[-3]
 
@@ -48,7 +42,7 @@ combine.formulae <- function(formula1, formula2, sep="") {
 
         ## If something is an interacted factor in terms2, and in terms1, need to interact with constant
         for (interaction in terms2[grep(":", terms2)]) {
-            parts <- split.interaction.term(interaction)
+            parts <- interaction.term.split(interaction)
             if (parts[1] %in% terms1)
                 terms1[parts[1] == terms1] <- paste0(parts[1], ':constant')
             if (parts[2] %in% terms1)

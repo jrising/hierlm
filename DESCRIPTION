@@ -1,8 +1,13 @@
 Package: hierlm
 Title: Hierarchical Linear Models
-Version: 0.0.0.9000
+Version: 0.0.3
 Authors@R: person("James", "Rising", email = "jarising@gmail.com", role = c("aut", "cre"))
+Author: James Rising [aut, cre]
+Maintainer: James Rising <jarising@gmail.com>
 Description: Estimates hierarchical linear models, constructing fictional observations to represent higher levels of aggregation.
+Imports: stats, utils
 Depends: R (>= 3.1.3)
-License: MIT License
+License: MIT + file LICENSE
 LazyData: true
+Suggests: knitr
+VignetteBuilder: knitr

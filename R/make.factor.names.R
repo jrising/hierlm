@@ -3,7 +3,8 @@
 #' Construct a factor name for each level
 #'
 #' @param name the factor to be decomposed
-#' @param data data frame with that as a column
+#' @param levels data frame with that as a column, or levels to produce
+#' @param sep a paste separator for creating factor names
 #' @return Vector of the factor names
 #' @examples
 #' make.factor.names("Species", iris)

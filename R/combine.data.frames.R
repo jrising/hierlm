@@ -7,6 +7,9 @@
 #'
 #' @param data1 data frame
 #' @param data2 data frame
+#' @param sep a paste separator for creating factor names
+#' @param keepfactors a list of factor names to translate (or NULL for
+#'   all); excluded factors will be given columns set to 0
 #' @return Augmented data frame
 #' @examples
 #' combine.data.frames(iris, data.frame(Sepal.Length=1, Matched.Sepal.Length=-1))

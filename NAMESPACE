@@ -1,1 +1,4 @@
 exportPattern("^[^\\.]")
+importFrom("stats", "as.formula", "lm", "terms", "var")
+importFrom("utils", "head", "tail")
+

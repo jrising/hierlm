@@ -2,15 +2,30 @@
 #'
 #' Interpret a hierarchical formula and fit it with the given data and weight ratios.
 #'
+#' hierlm() takes a formula which could consist of multiple parts, and one or more data.frames to provide fitting data for any of those parts with dependent variables.
+#'
+#' Each part of the hierlm formula takes one of the following forms:
+#' y ~ ... : an lm-style formula; the left-hand-side variables much match
+#' f - b : A requirement that two variables be close together (typically one is a factor)
+#' f - . : A requirement that a variable (or set of factors) be close to a new hyper-variable
+#' a : f - [b or .] : A requirement that the results of an interaction be near a hyper-variable
+#' a : f > b : f : A requirement that one interaction is close to another set of interactions, with the lhs as the strict supersets
+#' fa == fb : A requirement that individual coefficients for factor levels are similar.
+#'
 #' @param formula an hierlm-style formula
 #' @param datas a data frame or a list of data frames, for each lm-style formula contained in the hierlm
-#' @param ratios a vector a ratios for the effect of fictional
+#' @param ratios a vector of ratios for the effect of fictional
 #'   observations, with length as large as the number of hyper
 #'   expressions.
+#' @param weights a vector of weights for fictional observations (overrides ratios)
+#' @param return what value to return.  Possible values are 'fit' (the fitted model), 'data' (the final data frame), and 'formula' (the final formula)
+#' @param verbose what to report.  Possible values are 'none', 'weight', 'extras', and 'final'
+#' @param sep a paste separator for creating factor and hyper terms
 #' @return A fitted lm model
 #' @examples
 #' hierlm(Sepal.Length ~ 0 + Petal.Length + Species + Sepal.Width : Species | Species - ., iris, 1)
-#' hierlm(Sepal.Length ~ 0 + Petal.Length + Species + Sepal.Width : Species | Sepal.Width : Species - ., iris, 2)
+#' hierlm(Sepal.Length ~ 0 + Petal.Length + Species + Sepal.Width : Species |
+#'   Sepal.Width : Species - ., iris, 2)
 
 hierlm <- function(formula, datas, ratios=NA, weights=NA, return="fit", verbose="none", sep="") {
     if (!(verbose %in% c("none", "weight", "extras", "final")))
@@ -48,7 +63,7 @@ hierlm <- function(formula, datas, ratios=NA, weights=NA, return="fit", verbose=
                     extras <- data.frame(left=weights[weight.ii], right=-weights[weight.ii])
                     extra.names <- terms[1:2]
                     if (grepl(':', terms[1])) {
-                        parts <- split.interaction.term(terms[1])
+                        parts <- interaction.term.split(terms[1])
                         if (!is.numeric(data[, parts[1]]) && !is.numeric(data[, parts[2]]))
                             warning("Double factors in interactions with == not supported.")
                         else if (is.numeric(data[, parts[1]]) && is.numeric(data[, parts[2]])) {
@@ -67,7 +82,7 @@ hierlm <- function(formula, datas, ratios=NA, weights=NA, return="fit", verbose=
                         if (length(extra.names) != 3) {
                             warning("Interaction on only rhs of == not supported.")
                         } else {
-                            parts <- split.interaction.term(terms[2])
+                            parts <- interaction.term.split(terms[2])
                             if (extra.names[3] %in% parts)
                                 extra.names[2] <- parts[parts != extra.names[3]]
                             else
@@ -113,14 +128,14 @@ hierlm <- function(formula, datas, ratios=NA, weights=NA, return="fit", verbose=
             } else {
                 ## Add in the next formula
                 data.ii <- data.ii + 1
-                data <- combine.data.frame(data, datas[[data.ii]])
+                data <- combine.data.frames(data, datas[[data.ii]])
             }
 
             ## Have any of the terms in the formula been factorized?
             checks <- get.formula.terms(formula)
             for (check in checks) {
                 if (grepl(':', check)) {
-                    for (subterm in split.interaction.term(check))
+                    for (subterm in interaction.term.split(check))
                         if (subterm %in% names(datas[[data.ii]]) && !(subterm %in% names(data)) && !is.numeric(datas[[data.ii]][, subterm]))
                             formula <- replace.factor.formula(subterm, formula, datas[[data.ii]])
                 } else {

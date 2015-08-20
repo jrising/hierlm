@@ -1,0 +1,140 @@
+---
+title: "Hierarchical Linear Models"
+author: "James Rising"
+date: "`r Sys.Date()`"
+output: pdf_document
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+The `hierlm` package allows researchers to perform a large range of
+hierarchical models, in which parameters are related to eachother or
+to 'hyper'-parameters.  The technique is very similar to Bayesian
+Hierarchical Modeling (See Bayesian Data Analysis, chapter 5, by
+Gelman et al.), but because it uses a linear model (OLS) can handle
+much larger datasets.
+
+Some possible use cases are:
+
+- You have data on several similar items (e.g., products at a grocery
+  store), and you want fitted parameters that describe them to
+  mutually inform each other.
+- You want to place a fitting cost on having certain parameters differ
+  from one another.
+
+We will consider the case of a model of coffee growth, where data
+comes from several different countries.  We want the model to be able
+to vary by country, particularly where the data suggests it.  However,
+we also want to bring all of the data to bear on the general range for
+each of the parameters, and for those global results to have a large
+role where there is little country-specific data.
+
+## Model description
+
+We would like to satisfy the following constraints:
+
+- Each variety of coffe in each country should have its own
+    parameters, e.g., $\gamma_{iv}$.
+- We want to partially pool across countries for a given variety:
+    $\gamma_{iv} \sim \mathcal{N}(\gamma_v, \tau_{\gamma_v})$.
+- We want to partially pool variety hyperparameters:
+    $\gamma_v \sim \mathcal{N}(\gamma, \tau_\gamma)$.
+- We want to do this for several parameters.
+- We need to use an approach faster than full Bayesian hierarchical modeling.
+
+The pooled model (that is, with a single parameter across all
+countries), looks like this:
+
+$$
+\log{y_{it}} = \alpha_i + beta_v + \gamma g_{it} + \kappa k_{it} + \phi
+f_{it} + \pi p_{it} + \psi p_{it}^2 + \epsilon_{it}
+$$
+
+A fully unpooled model (with independent parameters for each country
+and variety) is:
+
+$$
+\log{y_{ivt}} = \alpha_i + \beta_v + \gamma_{iv} g_{it} +
+\kappa_{iv} k_{it} + \phi_{iv} f_{it} + \pi_{iv} p_{it} + \psi_{iv}
+p_{it}^2 + \epsilon_{ivt}
+$$
+
+We can augment the fully unpooled model with "partial pooling
+relationships", each with their own error term.  By simultaneously
+minimizing these error terms, we get a partial pooling fit.
+
+$$
+\begin{aligned}
+    \gamma_{iv} &= \gamma_v + \epsilon_{iv}\\
+    \gamma_a &= \gamma_c + \epsilon_a\\
+    \gamma_r &= \gamma_c + \epsilon_r\\
+    &\vdots
+\end{aligned}
+$$
+
+The magic is in rewriting the original unpooled model so that it
+admits additional parameters, and then to create 'fictional
+observations'.  These parameters have an independent variable set to 0
+for all of the original lines.  Correspondingly, the dependent
+variable and the constant or fixed effect terms are set to 0 in the
+partial pooling fictional observations.
+
+$$
+  \begin{array}{rllll}
+    \log{y_{ivt}} &= \alpha_i &+ \gamma_{iv} g_{it}
+    & &+ \cdots \\
+    \hline
+    \log{y_{ivt}}
+    &= \sum_j \alpha_j \mathbf{1}_{j = i}
+    &+ \sum_{ju} \gamma_{ju} g_{it} \mathbf{1}_{ju = iv}
+    &+ \gamma_a 0 + \gamma_r 0 + \gamma_c 0
+    &+ \cdots \\
+    \hline
+    0
+    &= \sum_j \alpha_j 0
+    &+ \sum_{ju} \gamma_{ju} \mathbf{1}_{ju = 1a}
+    &- \gamma_a 1 - \gamma_r 0 - \gamma_c 0
+      &+ \cdots \\
+    0
+    &= \sum_j \alpha_j 0
+    &+ \sum_{ju} \gamma_{ju} \mathbf{1}_{ju = 2a}
+    &- \gamma_a 1 - \gamma_r 0 - \gamma_c 0
+      &+ \cdots \\
+    & & \vdots & & \\
+    0
+    &= \sum_j \alpha_j 0
+    &+ \sum_{ju} \gamma_{ju} \mathbf{1}_{ju = 1r}
+    &- \gamma_a 0 - \gamma_r 1 - \gamma_c 0
+      &+ \cdots \\
+    & & \vdots & & \\
+    0
+    &= \sum_j \alpha_j 0
+    &+ \sum_ju \gamma_{ju} \mathbf{1}_{ju = 1c}
+    &- \gamma_a 0 - \gamma_r 0 - \gamma_c 1
+      &+ \cdots \\
+    & & \vdots & & \\
+    0
+    &= \sum_j \alpha_j 0
+    &+ \sum_ju \gamma_{ju} 0
+    &+ \gamma_a 1 + \gamma_r 0 - \gamma_c 1
+      &+ \cdots \\
+    0
+    &= \sum_j \alpha_j 0
+    &+ \sum_ju \gamma_{ju} 0
+    &+ \gamma_a 0 + \gamma_r 1 - \gamma_c 1
+      &+ \cdots \\
+  \end{array}
+$$
+
+The code to fit the model looks like this:
+```
+    model <- hierlm(logyield ~ 0 + region + variety + regionvariety:gdd1000 |
+                    regionvariety:gdd1000 > variety:gdd1000 |
+                    varietyarabica:gdd1000 == varietycombined:gdd1000 |
+                    varietyrobusta:gdd1000 == varietycombined:gdd1000,
+                    data, ratios=c(.1, .1, .1))
+    summary(model)
+```
+

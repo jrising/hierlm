@@ -3,6 +3,7 @@
 #' Return a list of terms in an lm formula, in the order they appear
 #'
 #' @param formula lm-style formula
+#' @param all.names boolean to extract every unique name
 #' @return Vector of the terms in the lm formula
 #' @examples
 #' get.formula.terms(Sepal.Length ~ Petal.Length + Species + Sepal.Width : Species)

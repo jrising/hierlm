@@ -6,13 +6,14 @@
 #' @param hyper name of the hyper column
 #' @param weight weight to be used in the rows
 #' @param data a data frame for inspecting levels
+#' @param sep a paste separator for creating hyper terms
 #' @return Fictional observations in a data frame
 #' @examples
 #' make.hyper.rows("Species", "hyperSpecies", 5, iris)
 
 make.hyper.rows <- function(nonhyper, hyper, weight, data, sep="") {
     if (grepl(':', nonhyper)) {
-        subterms <- split.interaction.term(nonhyper)
+        subterms <- interaction.term.split(nonhyper)
         for (subterm in subterms) {
             if (!is.numeric(data[, subterm])) {
                 extras <- make.hyper.rows(subterm, hyper, weight, data)
@@ -25,7 +26,7 @@ make.hyper.rows <- function(nonhyper, hyper, weight, data, sep="") {
             }
         }
     } else if (grepl(':', hyper)) {
-        subterms <- split.interaction.term(hyper)
+        subterms <- interaction.term.split(hyper)
         for (subterm in subterms) {
             if (!is.numeric(data[, subterm])) {
                 extras <- make.hyper.rows(nonhyper, subterm, weight, data)

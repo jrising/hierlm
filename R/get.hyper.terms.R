@@ -5,6 +5,7 @@
 #' Can also be of the form "a > b"
 #'
 #' @param formula Single component of a hierlm formula
+#' @param sep a paste separator for creating hyper terms
 #' @return Vector of c(nonhyper, hyper, is.interaction), if a new one was created;
 #'   or c(left, right, NA) if both terms are given;
 #'   or c() if not an "a - b" expression
@@ -32,7 +33,7 @@ get.hyper.terms <- function(formula, sep="") {
     if ("." %in% terms) {
         nonhyper <- terms[terms != "."]
         if (grepl(':', nonhyper)) {
-            subterms <- split.interaction.term(nonhyper)
+            subterms <- interaction.term.split(nonhyper)
             hyper <- paste("hyper", paste(subterms, collapse=sep), sep=sep)
             return(c(nonhyper, hyper, T))
         } else {

@@ -5,9 +5,9 @@
 #' @param term An interaction (a:b) term
 #' @return Vector of the subterms (c(a, b))
 #' @examples
-#' split.interaction.term("Petal.Length : Species")
+#' interaction.term.split("Petal.Length : Species")
 
-split.interaction.term <- function(term) {
+interaction.term.split <- function(term) {
     subterms <- strsplit(term, ":")[[1]]
     gsub("^\\s+|\\s+$", "", subterms)
 }

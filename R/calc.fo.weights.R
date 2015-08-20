@@ -9,7 +9,8 @@
 #' @param data optional data frame
 #' @return Coefficients for fictional observations
 #' @examples
-#' calc.fo.weights(Sepal.Length ~ Petal.Length + Sepal.Width : Species, "Sepal.Width:Species", 5, data=iris)
+#' calc.fo.weights(Sepal.Length ~ Petal.Length + Sepal.Width : Species,
+#'   "Sepal.Width:Species", 5, data=iris)
 
 calc.fo.weights <- function(formula, label, ratio, data) {
     mod.lm <- lm(formula, data)
@@ -19,7 +20,7 @@ calc.fo.weights <- function(formula, label, ratio, data) {
     dummies <- substr(names(mod.lm$coefficients), 1, nchar(label)) == label
     if (sum(dummies) == 0 && grepl(':', label)) {
         ## Try flipping an interaction
-        subterms = split.interaction.term(label)
+        subterms = interaction.term.split(label)
         dummies <- grep(paste(subterms[2], ".*", subterms[1], sep=""), names(mod.lm$coefficients))
         if (length(dummies) == 0)
             dummies <- grep(paste(subterms[1], ".*", subterms[2], sep=""), names(mod.lm$coefficients))
