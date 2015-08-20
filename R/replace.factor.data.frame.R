@@ -12,8 +12,10 @@
 
 replace.factor.data.frame <- function(name, data, iftrue, sep="") {
     ## Add factor level columns
-    for (factor in make.factor.names(name, data, sep=sep))
-        data[, factor] <- ifelse(data[, name] == level, iftrue, 0)
+    levels <- unique(data[, name])
+    levelnames <- make.factor.names(name, levels, sep=sep)
+    for (ii in 1:length(levels))
+        data[, levelnames[ii]] <- ifelse(data[, name] == levels[ii], iftrue, 0)
     ## Remove original factor column
     data[, -which(names(data) == name)]
 }

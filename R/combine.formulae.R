@@ -6,6 +6,7 @@
 #' f - b : A requirement that two variables be close together (typically one is a factor)
 #' f - . : A requirement that a variable (or set of factors) be close to a new hyper-variable
 #' a : f - [b or .] : A requirement that the results of an interaction be near a hyper-variable
+#' a : f > b : f : A requirement that one interaction is close to another set of interactions, with the lhs as the strict supersets
 #' TODO:
 #' a + B : A requirement that the factors in 'a' are similar to eachother by smoothness 'B'
 #'
@@ -43,6 +44,15 @@ combine.formulae <- function(formula1, formula2, sep="") {
         } else {
             if (!("0" %in% terms1 && "constant" %in% terms1))
                 terms1 <- c("0", "constant", terms1)
+        }
+
+        ## If something is an interacted factor in terms2, and in terms1, need to interact with constant
+        for (interaction in terms2[grep(":", terms2)]) {
+            parts <- split.interaction.term(interaction)
+            if (parts[1] %in% terms1)
+                terms1[parts[1] == terms1] <- paste0(parts[1], ':constant')
+            if (parts[2] %in% terms1)
+                terms1[parts[2] == terms1] <- paste0(parts[2], ':constant')
         }
     }
 

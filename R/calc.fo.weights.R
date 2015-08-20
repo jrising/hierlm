@@ -21,8 +21,19 @@ calc.fo.weights <- function(formula, label, ratio, data) {
         ## Try flipping an interaction
         subterms = split.interaction.term(label)
         dummies <- grep(paste(subterms[2], ".*", subterms[1], sep=""), names(mod.lm$coefficients))
+        if (length(dummies) == 0)
+            dummies <- grep(paste(subterms[1], ".*", subterms[2], sep=""), names(mod.lm$coefficients))
     }
     betas <- mod.lm$coefficients[dummies]
-
-    sumerr / (ratio * sum(dummies) * var(betas))
+    betas <- betas[!is.na(betas)] # XXX: Not clear what I should do in this case.
+    weight <- sumerr / (ratio * sum(dummies) * var(betas))
+    if (is.na(weight)) {
+        warning("Calculated weight is NA.  Using 1/ratio instead.")
+        weight <- 1 / ratio
+    }
+    if (weight == 0) {
+        warning("Calculated weight is zero.  Using 1/ratio instead.")
+        weight <- 1 / ratio
+    }
+    weight
 }

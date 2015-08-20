@@ -7,7 +7,10 @@
 #' @examples
 #' get.formula.terms(Sepal.Length ~ Petal.Length + Species + Sepal.Width : Species)
 
-get.formula.terms <- function(formula) {
+get.formula.terms <- function(formula, all.names=F) {
+    if (all.names)
+        return(unique(strsplit(gsub("[^a-zA-Z0-9]", " ", paste(as.character(formula)[2:3], collapse="~")), "\\s+")[[1]]))
+
     terms <- strsplit(as.character(formula)[3], "\\+")[[1]]
     gsub("^\\s+|\\s+$", "", terms)
 }

@@ -12,8 +12,11 @@
 #' combine.data.frames(iris, data.frame(Sepal.Length=1, Matched.Sepal.Length=-1))
 #' combine.data.frames(iris, data.frame(Species="something else"))
 
-combine.data.frames <- function(data1, data2, sep="") {
+combine.data.frames <- function(data1, data2, sep="", keepfactors=NULL) {
     data <- data1
+
+    if (is.null(keepfactors))
+        keepfactors <- names(data1)
 
     ## Translate factors not also in data2 into multiple columns
     ## Also, translate factors into character (in case factors don't match)
@@ -21,7 +24,8 @@ combine.data.frames <- function(data1, data2, sep="") {
         name = names(data1)[jj]
         if (!is.numeric(data1[, name])) {
             if (!(name %in% names(data2))) {
-                data <- replace.factor.data.frame(name, data, 1, sep=sep)
+                fillin <- ifelse(name %in% keepfactors, 1, 0)
+                data <- replace.factor.data.frame(name, data, fillin, sep=sep)
             } else {
                 data[, jj] <- as.character(data[, jj])
             }

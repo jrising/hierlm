@@ -30,6 +30,9 @@ replace.factor.formula <- function(name, formula, data, sep="") {
         }
     }
 
+    ## Remove duplicates
+    terms <- terms[!duplicated(terms)]
+
     chunks <- as.character(formula)
     as.formula(paste(chunks[2], paste(terms, collapse=" + "), sep=" ~ "))
 }

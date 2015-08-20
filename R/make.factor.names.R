@@ -7,7 +7,11 @@
 #' @return Vector of the factor names
 #' @examples
 #' make.factor.names("Species", iris)
+#' make.factor.names("Species", unique(iris$Species))
 
-make.factor.names <- function(name, data, sep="") {
-    paste(name, unique(data[, name]), sep=sep)
+make.factor.names <- function(name, levels, sep="") {
+    if (class(levels) == "data.frame")
+        make.factor.names(name, unique(levels[, name]), sep=sep)
+    else
+        paste(name, gsub("[^a-zA-z0-9]", ".", levels), sep=sep)
 }

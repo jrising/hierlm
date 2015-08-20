@@ -2,6 +2,7 @@
 #'
 #' If the "a - b" formula requires the creation of a new hyper terms
 #' (one of a or b is .), return them.
+#' Can also be of the form "a > b"
 #'
 #' @param formula Single component of a hierlm formula
 #' @return Vector of c(nonhyper, hyper, is.interaction), if a new one was created;
@@ -15,8 +16,17 @@ get.hyper.terms <- function(formula, sep="") {
         return(c())
 
     terms <- strsplit(formula, "-")[[1]]
-    if (length(terms) != 2)
-        return(c())
+    relation.type <- "-"
+    if (length(terms) != 2) {
+        terms <- strsplit(formula, ">")[[1]]
+        relation.type <- ">"
+        if (length(terms) != 2) {
+            terms <- strsplit(formula, "==")[[1]]
+            relation.type <- "=="
+            if (length(terms) != 2)
+                return(c())
+        }
+    }
 
     terms <- gsub("^\\s+|\\s+$", "", terms)
     if ("." %in% terms) {
@@ -30,5 +40,5 @@ get.hyper.terms <- function(formula, sep="") {
             return(c(nonhyper, hyper, F))
         }
     }
-    return(c(terms, NA))
+    return(c(terms, relation.type))
 }
