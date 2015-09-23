@@ -50,11 +50,6 @@ combine.formulae <- function(formula1, formula2, sep="") {
         }
     }
 
-    for (term in terms2)
-        if (!(term %in% terms1))
-            terms1 <- c(terms1, term)
-
-    as.formula(paste(chunks1[2], "~", paste(terms1, collapse=" + ")),
-               env=attr(formula1, '.Environment'))
+    append.formula.terms(formula1, terms2)
 }
 

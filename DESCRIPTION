@@ -1,6 +1,6 @@
 Package: hierlm
 Title: Hierarchical Linear Models
-Version: 0.0.3
+Version: 0.2.0
 Authors@R: person("James", "Rising", email = "jarising@gmail.com", role = c("aut", "cre"))
 Author: James Rising [aut, cre]
 Maintainer: James Rising <jarising@gmail.com>
